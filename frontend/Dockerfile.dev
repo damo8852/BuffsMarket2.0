@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package.json first
+COPY package.json ./
+
+# Remove package-lock.json if it exists and install dependencies
+RUN rm -f package-lock.json && npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
