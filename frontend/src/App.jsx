@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import './App.css';
+import Login from './components/Login';
+import Register from './components/Register';
 
 const GET_USERS = gql`
   query GetUsers {
@@ -8,6 +10,18 @@ const GET_USERS = gql`
       id
       username
       email
+    }
+  }
+`;
+
+const GET_ME = gql`
+  query GetMe {
+    me {
+      id
+      username
+      email
+      firstName
+      lastName
     }
   }
 `;
@@ -46,14 +60,54 @@ function GraphQLSandbox() {
   );
 }
 
-function MainApp() {
+function AuthContainer({ onAuthSuccess }) {
+  const [isLogin, setIsLogin] = useState(true);
+
+  const handleAuthSuccess = (user) => {
+    onAuthSuccess(user);
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-tabs">
+        <button 
+          className={isLogin ? 'active' : ''} 
+          onClick={() => setIsLogin(true)}
+        >
+          Login
+        </button>
+        <button 
+          className={!isLogin ? 'active' : ''} 
+          onClick={() => setIsLogin(false)}
+        >
+          Register
+        </button>
+      </div>
+      
+      {isLogin ? (
+        <Login onLoginSuccess={handleAuthSuccess} />
+      ) : (
+        <Register onRegisterSuccess={handleAuthSuccess} />
+      )}
+    </div>
+  );
+}
+
+function MainApp({ user, onLogout }) {
   const { loading, error, data } = useQuery(GET_USERS);
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>BuffsMarket 2.0</h1>
-        <p>Welcome to your marketplace!</p>
+        <div className="user-info">
+          <h1>BuffsMarket 2.0</h1>
+          {user && (
+            <div className="user-details">
+              <p>Welcome, {user.firstName || user.username}!</p>
+              <button onClick={onLogout} className="logout-btn">Logout</button>
+            </div>
+          )}
+        </div>
         
         <div className="graphql-test">
           <h2>GraphQL Test</h2>
@@ -85,8 +139,19 @@ function MainApp() {
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+      setIsAuthenticated(true);
+    }
+
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname);
     };
@@ -105,12 +170,29 @@ function App() {
     };
   }, []);
 
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
   // Check if we're on the graphql route
   if (currentPath === '/graphql') {
     return <GraphQLSandbox />;
   }
 
-  return <MainApp />;
+  // Show authentication if not logged in
+  if (!isAuthenticated) {
+    return <AuthContainer onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  return <MainApp user={user} onLogout={handleLogout} />;
 }
 
 export default App;
