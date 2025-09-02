@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
-import './App.css';
+import './styles/Home.css';
 import Login from './components/Login';
 import Register from './components/Register';
 
@@ -97,14 +97,16 @@ function MainApp({ user, onLogout }) {
   const { loading, error, data } = useQuery(GET_USERS);
 
   return (
+    
     <div className="App">
+      
       <header className="App-header">
         <div className="user-info">
           <h1>BuffsMarket 2.0</h1>
           {user && (
             <div className="user-details">
               <p>Welcome, {user.firstName || user.username}!</p>
-              <button onClick={onLogout} className="logout-btn">Logout</button>
+              <button onClick={onLogout} className="logout-btn" >Logout</button>
             </div>
           )}
         </div>
@@ -151,6 +153,26 @@ function App() {
       setUser(JSON.parse(userData));
       setIsAuthenticated(true);
     }
+    const handleStorageChange = (e) => {
+      if (e.key === 'authToken' || e.key === 'user') {
+        if (e.key === 'authToken' && e.newValue) {
+          try {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+              setUser(JSON.parse(userData));
+              setIsAuthenticated(true);
+            }
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+          }
+        } else if (e.key === 'authToken' && !e.newValue) {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname);
@@ -180,6 +202,7 @@ function App() {
     localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
+    window.location.reload();
   };
 
   // Check if we're on the graphql route

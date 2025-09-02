@@ -27,19 +27,22 @@ class AuthPayload(graphene.ObjectType):
 
 class LoginMutation(graphene.Mutation):
     class Arguments:
-        username = graphene.String(required=True)
+        email = graphene.String(required=True)
         password = graphene.String(required=True)
-    
+
     Output = AuthPayload
     
-    def mutate(self, info, username, password):
-        user = authenticate(username=username, password=password)
-        
+    def mutate(self, info, email, password):
+        try:
+            user = User.objects.get(email=email)
+            user = authenticate(username=user.username, password=password)
+        except User.DoesNotExist:
+            user = None
         if user is not None:
             if user.is_active:
                 payload = {
                     'user_id': user.id,
-                    'username': user.username,
+                    'email': user.email,
                     'exp': datetime.utcnow() + timedelta(days=7)
                 }
                 token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')

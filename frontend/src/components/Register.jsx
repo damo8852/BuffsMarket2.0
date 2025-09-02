@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
+import '../styles/register.css';
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!, $firstName: String, $lastName: String) {
@@ -30,13 +31,16 @@ const Register = ({ onRegisterSuccess }) => {
   const [error, setError] = useState('');
 
   const [register, { loading }] = useMutation(REGISTER_MUTATION, {
+    
     onCompleted: (data) => {
+ 
       if (data.register.success) {
         // Store token and user data
         localStorage.setItem('authToken', data.register.token);
         localStorage.setItem('user', JSON.stringify(data.register.user));
         setError('');
         onRegisterSuccess(data.register.user);
+        window.location.href = '/login';
       } else {
         setError(data.register.message);
       }
@@ -53,6 +57,10 @@ const Register = ({ onRegisterSuccess }) => {
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+    if (!formData.email.endsWith('@colorado.edu')) {
+      setError('Email must end with "@colorado.edu."');
       return;
     }
 
@@ -106,6 +114,7 @@ const Register = ({ onRegisterSuccess }) => {
             onChange={handleChange}
             required
           />
+          
         </div>
         <div className="form-group">
           <label htmlFor="firstName">First Name:</label>

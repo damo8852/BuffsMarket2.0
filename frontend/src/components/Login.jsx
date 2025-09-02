@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
+import '../styles/login.css';
 
 const LOGIN_MUTATION = gql`
-  mutation Login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
       success
       message
       token
@@ -20,7 +21,7 @@ const LOGIN_MUTATION = gql`
 
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -28,7 +29,6 @@ const Login = ({ onLoginSuccess }) => {
   const [login, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       if (data.login.success) {
-        // Store token and user data
         localStorage.setItem('authToken', data.login.token);
         localStorage.setItem('user', JSON.stringify(data.login.user));
         setError('');
@@ -47,7 +47,7 @@ const Login = ({ onLoginSuccess }) => {
     setError('');
     login({
       variables: {
-        username: formData.username,
+        email: formData.email,
         password: formData.password
       }
     });
@@ -66,12 +66,12 @@ const Login = ({ onLoginSuccess }) => {
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="email">Email:</label>
           <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             required
           />
