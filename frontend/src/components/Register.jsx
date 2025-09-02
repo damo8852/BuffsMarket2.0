@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import '../styles/register.css';
 
+// Constants
+const VALIDATION_RULES = {
+  PASSWORD_MIN_LENGTH: 8,
+  COLORADO_EMAIL_SUFFIX: '@colorado.edu'
+};
+
+const ERROR_MESSAGES = {
+  PASSWORDS_DONT_MATCH: 'Passwords do not match',
+  PASSWORD_TOO_SHORT: `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`,
+  INVALID_EMAIL: `Email must be a ${VALIDATION_RULES.COLORADO_EMAIL_SUFFIX} email`
+};
+
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!, $firstName: String, $lastName: String) {
     register(username: $username, email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
@@ -18,6 +30,84 @@ const REGISTER_MUTATION = gql`
     }
   }
 `;
+
+// Validation functions
+const validateForm = (formData) => {
+  if (formData.password !== formData.confirmPassword) {
+    return ERROR_MESSAGES.PASSWORDS_DONT_MATCH;
+  }
+  
+  if (formData.password.length < VALIDATION_RULES.PASSWORD_MIN_LENGTH) {
+    return ERROR_MESSAGES.PASSWORD_TOO_SHORT;
+  }
+  
+  if (!formData.email.endsWith(VALIDATION_RULES.COLORADO_EMAIL_SUFFIX)) {
+    return ERROR_MESSAGES.INVALID_EMAIL;
+  }
+  
+  return null;
+};
+
+// Form field configuration
+const FORM_FIELDS = [
+  {
+    id: 'username',
+    name: 'username',
+    type: 'text',
+    label: 'Username',
+    required: true
+  },
+  {
+    id: 'email',
+    name: 'email',
+    type: 'email',
+    label: 'Email',
+    required: true
+  },
+  {
+    id: 'firstName',
+    name: 'firstName',
+    type: 'text',
+    label: 'First Name',
+    required: false
+  },
+  {
+    id: 'lastName',
+    name: 'lastName',
+    type: 'text',
+    label: 'Last Name',
+    required: false
+  },
+  {
+    id: 'password',
+    name: 'password',
+    type: 'password',
+    label: 'Password',
+    required: true
+  },
+  {
+    id: 'confirmPassword',
+    name: 'confirmPassword',
+    type: 'password',
+    label: 'Confirm Password',
+    required: true
+  }
+];
+
+// Reusable FormField component
+const FormField = ({ field, value, onChange }) => (
+  <div className="form-group">
+    <label htmlFor={field.id}>{field.label}:</label>
+    <input
+      type={field.type}
+      id={field.id}
+      name={field.name}
+      value={value}
+      onChange={onChange}
+      required={field.required}
+    />
+  </div>
+);
 
 const Register = ({ onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
@@ -53,20 +143,9 @@ const Register = ({ onRegisterSuccess }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    if (!formData.email.endsWith('@colorado.edu')) {
-      setError('Email must end with "@colorado.edu."');
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    const validationError = validateForm(formData);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -93,77 +172,20 @@ const Register = ({ onRegisterSuccess }) => {
       <h2>Register</h2>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          
-        </div>
-        <div className="form-group">
-          <label htmlFor="firstName">First Name:</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
+        {FORM_FIELDS.map(field => (
+          <FormField
+            key={field.id}
+            field={field}
+            value={formData[field.name]}
             onChange={handleChange}
           />
-        </div>
-        <div className="form-group">
-          <label htmlFor="lastName">Last Name:</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="confirmPassword">Confirm Password:</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        ))}
         <button type="submit" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
         </button>
       </form>
     </div>
   );
-};
+}
 
 export default Register;
