@@ -6,13 +6,9 @@ const httpLink = createHttpLink({
   uri: 'http://localhost:8000/graphql/',
 });
 
-// Auth link to add JWT token to headers
 const authLink = setContext((_, { headers }) => {
-  // Get the authentication token from local storage if it exists
   const token = localStorage.getItem('authToken');
-  
-  // Return the headers to the context so httpLink can read them
-  return {
+    return {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : "",
@@ -20,13 +16,10 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
-// Error link to handle authentication errors
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {
     for (let err of graphQLErrors) {
-      // Handle authentication errors
       if (err.extensions?.code === 'UNAUTHENTICATED') {
-        // Clear token and redirect to login
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         window.location.href = '/login';

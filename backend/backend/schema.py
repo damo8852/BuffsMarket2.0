@@ -4,7 +4,6 @@ from django.conf import settings
 import jwt
 from datetime import datetime, timedelta
 
-# Configure Django settings if not already configured
 if not settings.configured:
     django.setup()
 

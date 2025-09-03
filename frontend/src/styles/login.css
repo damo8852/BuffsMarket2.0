@@ -229,7 +229,6 @@
     text-decoration: underline;
   }
   
-  /* Responsive Design */
   @media (max-width: 480px) {
     .login-container {
       padding: 16px;
@@ -260,7 +259,6 @@
     }
   }
   
-  /* Loading animation */
   @keyframes pulse {
     0%, 100% {
       opacity: 1;

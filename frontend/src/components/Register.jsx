@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import '../styles/register.css';
 
-// Constants
 const VALIDATION_RULES = {
   PASSWORD_MIN_LENGTH: 8,
   COLORADO_EMAIL_SUFFIX: '@colorado.edu'
@@ -31,7 +30,6 @@ const REGISTER_MUTATION = gql`
   }
 `;
 
-// Validation functions
 const validateForm = (formData) => {
   if (formData.password !== formData.confirmPassword) {
     return ERROR_MESSAGES.PASSWORDS_DONT_MATCH;
@@ -48,7 +46,6 @@ const validateForm = (formData) => {
   return null;
 };
 
-// Form field configuration
 const FORM_FIELDS = [
   {
     id: 'username',
@@ -94,7 +91,6 @@ const FORM_FIELDS = [
   }
 ];
 
-// Reusable FormField component
 const FormField = ({ field, value, onChange }) => (
   <div className="form-group">
     <label htmlFor={field.id}>{field.label}:</label>
@@ -125,7 +121,6 @@ const Register = ({ onRegisterSuccess }) => {
     onCompleted: (data) => {
  
       if (data.register.success) {
-        // Store token and user data
         localStorage.setItem('authToken', data.register.token);
         localStorage.setItem('user', JSON.stringify(data.register.user));
         setError('');
