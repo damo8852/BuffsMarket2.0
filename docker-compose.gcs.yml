@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  backend:
+    volumes:
+      - ./secrets:/secrets:ro
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/buffsmarket2-d7c914def3f4.json
+      GCS_BUCKET_NAME: buff-bucket
+      GCS_UPLOAD_PREFIX: listings

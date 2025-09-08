@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from graphene_django.views import GraphQLView
 
